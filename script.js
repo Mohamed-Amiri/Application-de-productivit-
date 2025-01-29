@@ -119,7 +119,7 @@ function updateTimer() {
     let minutes = Math.floor(timeLeft / 60);
     let seconds = timeLeft % 60;
     let formattedTime = `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
-    
+
     timerDisplay.innerHTML = formattedTime;
 }
 
@@ -176,8 +176,8 @@ updateTimer();
 
 
 function getBreakDuration() {
-    return (cyclesCompleted % 4 === 0) 
-        ? parseInt(longBreakDurationInput.value) * 60 
+    return (cyclesCompleted % 4 === 0)
+        ? parseInt(longBreakDurationInput.value) * 60
         : parseInt(shortBreakDurationInput.value) * 60;
 }
 
