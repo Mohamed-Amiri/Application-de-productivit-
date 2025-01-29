@@ -100,3 +100,92 @@ function deleteTask(taskId) {
         taskElem.remove();
     }
 }
+
+const startBtn = document.getElementById("startBtn");
+const pauseBtn = document.getElementById("pauseBtn");
+const resetBtn = document.getElementById("resetBtn");
+const timerDisplay = document.getElementById("timer");
+const cyclesCompletedDisplay = document.getElementById("cyclesCompleted");
+const workDurationInput = document.getElementById("workDuration");
+const shortBreakDurationInput = document.getElementById("shortBreakDuration");
+const longBreakDurationInput = document.getElementById("longBreakDuration");
+
+let interval;
+let timeLeft = 0;
+let isWorkTime = true;
+let cyclesCompleted = 0;
+
+function updateTimer() {
+    let minutes = Math.floor(timeLeft / 60);
+    let seconds = timeLeft % 60;
+    let formattedTime = `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+    
+    timerDisplay.innerHTML = formattedTime;
+}
+
+function startTimer() {
+    if (!interval) {
+        interval = setInterval(() => {
+            if (timeLeft > 0) {
+                timeLeft--;
+                updateTimer();
+            } else {
+                clearInterval(interval);
+                interval = null;
+                if (isWorkTime) {
+                    cyclesCompleted++;
+                    cyclesCompletedDisplay.textContent = `Cycles terminés : ${cyclesCompleted}`;
+                    if (cyclesCompleted % 4 === 0) {
+                        timeLeft = parseInt(longBreakDurationInput.value) * 60;
+                    } else {
+                        timeLeft = parseInt(shortBreakDurationInput.value) * 60;
+                    }
+                } else {
+                    timeLeft = parseInt(workDurationInput.value) * 60;
+                }
+                isWorkTime = !isWorkTime;
+                startTimer();
+            }
+        }, 1000);
+    }
+}
+
+function pauseTimer() {
+    clearInterval(interval);
+    interval = null;
+}
+
+function resetTimer() {
+    clearInterval(interval);
+    interval = null;
+    timeLeft = parseInt(workDurationInput.value) * 60;
+    isWorkTime = true;
+    cyclesCompleted = 0;
+    cyclesCompletedDisplay.textContent = `Cycles terminés : ${cyclesCompleted}`;
+    updateTimer();
+}
+
+startBtn.addEventListener("click", startTimer);
+pauseBtn.addEventListener("click", pauseTimer);
+resetBtn.addEventListener("click", resetTimer);
+
+// Initialize timer with work duration
+timeLeft = parseInt(workDurationInput.value) * 60;
+updateTimer();
+
+
+
+function getBreakDuration() {
+    return (cyclesCompleted % 4 === 0) 
+        ? parseInt(longBreakDurationInput.value) * 60 
+        : parseInt(shortBreakDurationInput.value) * 60;
+}
+
+// Modifiez la partie concernée dans startTimer :
+if (isWorkTime) {
+    cyclesCompleted++;
+    cyclesCompletedDisplay.textContent = `Cycles terminés : ${cyclesCompleted}`;
+    timeLeft = getBreakDuration(); // Utilisation de la nouvelle fonction
+} else {
+    timeLeft = parseInt(workDurationInput.value) * 60;
+}
