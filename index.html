@@ -70,6 +70,13 @@
         </div>
     </div>
 
+   
+
+<!-- Previous head content remains the same -->
+
+
+    <!-- Previous nav and task form content remains the same -->
+
     <div class="container mb-4">
         <div class="row justify-content-center">
             <div class="col-12 col-md-8 col-lg-6">
@@ -80,14 +87,49 @@
                         <div id="timer" class="fs-1 mb-4">25:00</div>
 
                         <div class="mb-4">
-                            <label for="workDuration" class="form-label">Session de travail (minutes)</label>
-                            <input type="number" id="workDuration" class="form-control" value="25" min="1">
+                            <div class="form-group">
+                                <label for="workDuration" class="form-label">Session de travail (minutes)</label>
+                                <input type="number" id="workDuration" class="form-control" value="25" min="1" max="60">
+                                <div class="invalid-feedback">
+                                    La durée doit être entre 1 et 60 minutes
+                                </div>
+                            </div>
 
-                            <label for="shortBreakDuration" class="form-label mt-3">Pause courte (minutes)</label>
-                            <input type="number" id="shortBreakDuration" class="form-control" value="5" min="1">
+                            <div class="form-group mt-3">
+                                <label for="shortBreakType" class="form-label">Type de pause courte</label>
+                                <select class="form-control" id="shortBreakType">
+                                    <option value="3">Pause rapide (3 min)</option>
+                                    <option value="5" selected>Pause standard (5 min)</option>
+                                    <option value="7">Pause prolongée (7 min)</option>
+                                    <option value="custom">Personnalisé</option>
+                                </select>
+                            </div>
 
-                            <label for="longBreakDuration" class="form-label mt-3">Pause longue (minutes)</label>
-                            <input type="number" id="longBreakDuration" class="form-control" value="15" min="1">
+                            <div class="form-group mt-3" id="customShortBreakGroup" style="display: none;">
+                                <label for="shortBreakDuration" class="form-label">Pause courte personnalisée (minutes)</label>
+                                <input type="number" id="shortBreakDuration" class="form-control" value="5" min="1" max="15">
+                                <div class="invalid-feedback">
+                                    La pause courte doit être entre 1 et 15 minutes
+                                </div>
+                            </div>
+
+                            <div class="form-group mt-3">
+                                <label for="longBreakType" class="form-label">Type de pause longue</label>
+                                <select class="form-control" id="longBreakType">
+                                    <option value="10">Pause courte (10 min)</option>
+                                    <option value="15" selected>Pause standard (15 min)</option>
+                                    <option value="20">Pause longue (20 min)</option>
+                                    <option value="custom">Personnalisé</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group mt-3" id="customLongBreakGroup" style="display: none;">
+                                <label for="longBreakDuration" class="form-label">Pause longue personnalisée (minutes)</label>
+                                <input type="number" id="longBreakDuration" class="form-control" value="15" min="5" max="30">
+                                <div class="invalid-feedback">
+                                    La pause longue doit être entre 5 et 30 minutes
+                                </div>
+                            </div>
                         </div>
 
                         <div class="btn-group w-100">
@@ -104,6 +146,7 @@
             </div>
         </div>
     </div>
+
 
     <div class="container mb-4">
         <div class="row justify-content-center">

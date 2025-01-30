@@ -101,29 +101,113 @@ function deleteTask(taskId) {
     }
 }
 
-const startBtn = document.getElementById("startBtn");
-const pauseBtn = document.getElementById("pauseBtn");
-const resetBtn = document.getElementById("resetBtn");
-const timerDisplay = document.getElementById("timer");
-const cyclesCompletedDisplay = document.getElementById("cyclesCompleted");
-const workDurationInput = document.getElementById("workDuration");
-const shortBreakDurationInput = document.getElementById("shortBreakDuration");
-const longBreakDurationInput = document.getElementById("longBreakDuration");
+// Get all the new elements
+const shortBreakTypeSelect = document.getElementById("shortBreakType");
+const longBreakTypeSelect = document.getElementById("longBreakType");
+const customShortBreakGroup = document.getElementById("customShortBreakGroup");
+const customLongBreakGroup = document.getElementById("customLongBreakGroup");
 
-let interval;
-let timeLeft = 0;
-let isWorkTime = true;
-let cyclesCompleted = 0;
-
-function updateTimer() {
-    let minutes = Math.floor(timeLeft / 60);
-    let seconds = timeLeft % 60;
-    let formattedTime = `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
-
-    timerDisplay.innerHTML = formattedTime;
+// Input validation functions
+function validateWorkDuration(value) {
+    const numValue = parseInt(value);
+    return numValue >= 1 && numValue <= 60;
 }
 
+function validateShortBreak(value) {
+    const numValue = parseInt(value);
+    return numValue >= 1 && numValue <= 15;
+}
+
+function validateLongBreak(value) {
+    const numValue = parseInt(value);
+    return numValue >= 5 && numValue <= 30;
+}
+
+function showError(input) {
+    input.classList.add('is-invalid');
+}
+
+function hideError(input) {
+    input.classList.remove('is-invalid');
+}
+
+// Add event listeners for input validation
+workDurationInput.addEventListener('input', function() {
+    if (validateWorkDuration(this.value)) {
+        hideError(this.value);
+    } else {
+        showError(this.value);
+    }
+});
+
+shortBreakDurationInput.addEventListener('input', function() {
+    if (validateShortBreak(this.value)) {
+        hideError(this);
+    } else {
+        showError(this);
+    }
+});
+
+longBreakDurationInput.addEventListener('input', function() {
+    if (validateLongBreak(this.value)) {
+        hideError(this);
+    } else {
+        showError(this);
+    }
+});
+
+// Handle break type selection changes
+shortBreakTypeSelect.addEventListener('change', function() {
+    if (this.value === 'custom') {
+        customShortBreakGroup.style.display = 'block';
+    } else {
+        customShortBreakGroup.style.display = 'none';
+        shortBreakDurationInput.value = this.value;
+    }
+});
+
+longBreakTypeSelect.addEventListener('change', function() {
+    if (this.value === 'custom') {
+        customLongBreakGroup.style.display = 'block';
+    } else {
+        customLongBreakGroup.style.display = 'none';
+        longBreakDurationInput.value = this.value;
+    }
+});
+
+// Update the getBreakDuration function to use the selected break types
+function getBreakDuration() {
+    if (cyclesCompleted % 4 === 0) {
+        // Long break
+        return longBreakTypeSelect.value === 'custom' 
+            ? parseInt(longBreakDurationInput.value) * 60
+            : parseInt(longBreakTypeSelect.value) * 60;
+    } else {
+        // Short break
+        return shortBreakTypeSelect.value === 'custom'
+            ? parseInt(shortBreakDurationInput.value) * 60
+            : parseInt(shortBreakTypeSelect.value) * 60;
+    }
+}
+
+// Update the startTimer function to include validation
 function startTimer() {
+    // Validate all inputs before starting
+    if (!validateWorkDuration(workDurationInput.value)) {
+        showError(workDurationInput);
+        return;
+    }
+    
+    if (shortBreakTypeSelect.value === 'custom' && !validateShortBreak(shortBreakDurationInput.value)) {
+        showError(shortBreakDurationInput);
+        return;
+    }
+    
+    if (longBreakTypeSelect.value === 'custom' && !validateLongBreak(longBreakDurationInput.value)) {
+        showError(longBreakDurationInput);
+        return;
+    }
+
     if (!interval) {
         interval = setInterval(() => {
             if (timeLeft > 0) {
@@ -135,11 +219,7 @@ function startTimer() {
                 if (isWorkTime) {
                     cyclesCompleted++;
                     cyclesCompletedDisplay.textContent = `Cycles terminés : ${cyclesCompleted}`;
-                    if (cyclesCompleted % 4 === 0) {
-                        timeLeft = parseInt(longBreakDurationInput.value) * 60;
-                    } else {
-                        timeLeft = parseInt(shortBreakDurationInput.value) * 60;
-                    }
+                    timeLeft = getBreakDuration();
                 } else {
                     timeLeft = parseInt(workDurationInput.value) * 60;
                 }
@@ -150,42 +230,8 @@ function startTimer() {
     }
 }
 
-function pauseTimer() {
-    clearInterval(interval);
-    interval = null;
-}
-
-function resetTimer() {
-    clearInterval(interval);
-    interval = null;
-    timeLeft = parseInt(workDurationInput.value) * 60;
-    isWorkTime = true;
-    cyclesCompleted = 0;
-    cyclesCompletedDisplay.textContent = `Cycles terminés : ${cyclesCompleted}`;
-    updateTimer();
-}
-
-startBtn.addEventListener("click", startTimer);
-pauseBtn.addEventListener("click", pauseTimer);
-resetBtn.addEventListener("click", resetTimer);
-
-// Initialize timer with work duration
-timeLeft = parseInt(workDurationInput.value) * 60;
+// Initialize the timer with validated work duration
+timeLeft = validateWorkDuration(workDurationInput.value) 
+    ? parseInt(workDurationInput.value) * 60 
+    : 1500; // Default to 25 minutes if invalid
 updateTimer();
-
-
-
-function getBreakDuration() {
-    return (cyclesCompleted % 4 === 0)
-        ? parseInt(longBreakDurationInput.value) * 60
-        : parseInt(shortBreakDurationInput.value) * 60;
-}
-
-// Modifiez la partie concernée dans startTimer :
-if (isWorkTime) {
-    cyclesCompleted++;
-    cyclesCompletedDisplay.textContent = `Cycles terminés : ${cyclesCompleted}`;
-    timeLeft = getBreakDuration(); // Utilisation de la nouvelle fonction
-} else {
-    timeLeft = parseInt(workDurationInput.value) * 60;
-}
