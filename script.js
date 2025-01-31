@@ -3,7 +3,7 @@ var descriptionInput = document.getElementById("description");
 var prioriteInput = document.getElementById("priorite");
 var tacheterInput = document.getElementById("tache-terminee");
 var tacheNonermineeInput = document.getElementById("tache-non-terminee");
-const sendbtn = document.getElementById("button-new");
+const sendbtn = document.getElementById("buttonnew");
 
 var taskesinfo = [];
 
@@ -233,5 +233,40 @@ function startTimer() {
 // Initialize the timer with validated work duration
 timeLeft = validateWorkDuration(workDurationInput.value) 
     ? parseInt(workDurationInput.value) * 60 
-    : 1500; // Default to 25 minutes if invalid
+    : 1500; 
 updateTimer();
+
+
+
+// validation input : 
+// const title = document.getElementById('title')
+// const description = document.getElementById('description')
+// const form = document.getElementById('form')
+// const errorElement = document.getElementById('error')
+
+// form.addEventListener()('buttonnew',  (e)=> {
+//     let messages = []
+
+//     if (title.value == '' || title.value == null){
+//        messages.push('pleas submit the input') 
+//     }
+//     if(messages.length > 0 ){
+//         e.preventDefault()
+//         errorElement.innerText = messages.join(', ')
+//     }
+    
+// })
+
+
+const title = document.getElementById("title");
+
+title.addEventListener("label ", (event) => {
+  if (title.validity.typeMismatch) {
+    title.setCustomValidity("I am expecting an title address!");
+  } else {
+    title.setCustomValidity("");
+  }
+});
+
+
+
