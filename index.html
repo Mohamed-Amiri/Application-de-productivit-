@@ -25,41 +25,36 @@
     <div id="form" class="container mb-4">
         <div class="row justify-content-center">
             <div class="col-12 col-md-8 col-lg-6">
-                <form>
+                <form id="taskForm" class="needs-validation" novalidate>
                     <div class="form-group mb-3">
                         <label for="title">Title</label>
                         <input type="text" class="form-control" id="title" placeholder="Title" required>
+                        <div class="invalid-feedback">Please provide a title.</div>
                     </div>
 
                     <div class="mb-3">
-                        <label id="description" for="description" class="form-label" aria-required="">Description</label>
+                        <label for="description" class="form-label">Description</label>
                         <textarea class="form-control" id="description" rows="3"></textarea>
+                        <div class="invalid-feedback">Please provide a description.</div>
                     </div>
 
                     <div class="form-group mb-3">
                         <label for="priorite">Priorité</label>
-                        <select class="form-control" id="priorite">
+                        <select class="form-control" id="priorite" required>
                             <option value="basse">basse</option>
                             <option value="moyenne">moyenne</option>
                             <option value="haute">haute</option>
                         </select>
+                        <div class="invalid-feedback">Please select a priority.</div>
                     </div>
 
-                    <div class="mb-3">
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="taskStatus" id="tache-terminee" value="completed"
-                                checked>
-                            <label class="form-check-label" for="tache-terminee">
-                                Tâche terminée
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="taskStatus" id="tache-non-terminee"
-                                value="not-completed">
-                            <label class="form-check-label" for="tache-non-terminee">
-                                Tâche non terminée
-                            </label>
-                        </div>
+                    <div class="form-group mb-3">
+                        <label for="status">Status</label>
+                        <select class="form-control" id="status" required>
+                            <option value="completed">Completed</option>
+                            <option value="not-completed">Not Completed</option>
+                        </select>
+                        <div class="invalid-feedback">Please select a status.</div>
                     </div>
 
                     <div class="d-grid">
@@ -70,20 +65,12 @@
         </div>
     </div>
 
-   
-
-<!-- Previous head content remains the same -->
-
-
-    <!-- Previous nav and task form content remains the same -->
-
     <div class="container mb-4">
         <div class="row justify-content-center">
             <div class="col-12 col-md-8 col-lg-6">
                 <div class="shadow-lg rounded p-4">
                     <div class="text-center">
                         <h1 class="mb-4">Pomodoro Timer</h1>
-
                         <div id="timer" class="fs-1 mb-4">25:00</div>
 
                         <div class="mb-4">
@@ -103,6 +90,7 @@
                                     <option value="7">Pause prolongée (7 min)</option>
                                     <option value="custom">Personnalisé</option>
                                 </select>
+                                <div class="invalid-feedback">Please select a break type.</div>
                             </div>
 
                             <div class="form-group mt-3" id="customShortBreakGroup" style="display: none;">
@@ -121,6 +109,7 @@
                                     <option value="20">Pause longue (20 min)</option>
                                     <option value="custom">Personnalisé</option>
                                 </select>
+                                <div class="invalid-feedback">Please select a break type.</div>
                             </div>
 
                             <div class="form-group mt-3" id="customLongBreakGroup" style="display: none;">
@@ -146,7 +135,6 @@
             </div>
         </div>
     </div>
-
 
     <div class="container mb-4">
         <div class="row justify-content-center">

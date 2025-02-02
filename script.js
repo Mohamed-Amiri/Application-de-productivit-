@@ -1,52 +1,107 @@
-var titleInput = document.getElementById("title");
-var descriptionInput = document.getElementById("description");
-var prioriteInput = document.getElementById("priorite");
-var tacheterInput = document.getElementById("tache-terminee");
-var tacheNonermineeInput = document.getElementById("tache-non-terminee");
+// Task Management
+const titleInput = document.getElementById("title");
+const descriptionInput = document.getElementById("description");
+const prioriteInput = document.getElementById("priorite");
+const statusInput = document.getElementById("status");
 const sendbtn = document.getElementById("buttonnew");
+let taskesinfo = [];
 
-var taskesinfo = [];
+// Pomodoro Timer Elements
+const workDurationInput = document.getElementById('workDuration');
+const shortBreakTypeSelect = document.getElementById('shortBreakType');
+const longBreakTypeSelect = document.getElementById('longBreakType');
+const customShortBreakGroup = document.getElementById('customShortBreakGroup');
+const customLongBreakGroup = document.getElementById('customLongBreakGroup');
+const shortBreakDurationInput = document.getElementById('shortBreakDuration');
+const longBreakDurationInput = document.getElementById('longBreakDuration');
+const startBtn = document.getElementById('startBtn');
+const pauseBtn = document.getElementById('pauseBtn');
+const resetBtn = document.getElementById('resetBtn');
+const timerDisplay = document.getElementById('timer');
+const cyclesCompletedDisplay = document.getElementById('cyclesCompleted');
 
+// Timer State
+let timeLeft;
+let interval;
+let isWorkTime = true;
+let cyclesCompleted = 0;
+
+// Form Element
+const taskForm = document.getElementById('taskForm');
+
+
+// Task Functions
 sendbtn.addEventListener("click", function () {
-    const title = titleInput.value;
-    const description = descriptionInput.value;
-    const priorite = prioriteInput.value;
-    const isCompleted = tacheterInput.checked;
-
-    var task = {
-        id: Date.now(), // Generate a unique ID using the current timestamp
-        title,
-        description,
-        priorite,
-        isCompleted
+    if (!validateForm()) {
+        return;
+    }
+    const task = {
+        id: Date.now(),
+        title: titleInput.value,
+        description: descriptionInput.value,
+        priorite: prioriteInput.value,
+        isCompleted: statusInput.value === 'completed'
     };
 
     taskesinfo.push(task);
     showData(task);
 
-    // Clear the form inputs
+    // Reset form
     titleInput.value = "";
     descriptionInput.value = "";
     prioriteInput.value = "basse";
-    tacheterInput.checked = true;
+    statusInput.value = "not-completed";
+
+    // reset form styles
+    titleInput.classList.remove('is-invalid');
+    descriptionInput.classList.remove('is-invalid');
+    prioriteInput.classList.remove('is-invalid');
+    statusInput.classList.remove('is-invalid');
 });
+
+function validateForm() {
+    let isValid = true;
+  
+    if (!titleInput.value.trim()) {
+      showError(titleInput, 'Please provide a title.');
+      isValid = false;
+    } else {
+      hideError(titleInput);
+    }
+
+    if(prioriteInput.value === ""){
+        showError(prioriteInput, 'Please select a priority.');
+      isValid = false;
+    }else{
+        hideError(prioriteInput);
+    }
+  
+     if(statusInput.value === ""){
+       showError(statusInput, 'Please select a status.');
+      isValid = false;
+     } else {
+      hideError(statusInput);
+    }
+  
+    return isValid;
+}
 
 function showData(task) {
     const parentElem = document.getElementById("tasks-list");
-
-    // Create a new `li` element
     const elem = document.createElement("li");
     elem.className = "list-group-item py-3";
     elem.id = `li-${task.id}`;
 
-    // Dynamically generate the task content based on the `task` object
     elem.innerHTML = `
         <div>
             <h5 class="mb-1">${task.title || "Untitled Task"}</h5>
             <p class="mb-2 text-muted small">${task.description || "No description provided."}</p>
             <div class="d-flex justify-content-between align-items-center">
-                <span class="badge bg-${getPriorityClass(task.priorite)}">${task.priorite || "Normal Priority"}</span>
-                <span class="badge bg-${task.isCompleted ? "success" : "danger"}">${task.isCompleted ? "Completed" : "Not Completed"}</span>
+                <span class="badge bg-${getPriorityClass(task.priorite)}">${task.priorite}</span>
+                <select class="form-select-sm status-select" data-task-id="${task.id}">
+                    <option value="completed" ${task.isCompleted ? 'selected' : ''}>Completed</option>
+                    <option value="not-completed" ${!task.isCompleted ? 'selected' : ''}>Not Completed</option>
+                </select>
                 <div>
                     <button class="btn btn-sm btn-success me-1" onclick="editTask('${task.id}')">Edit</button>
                     <button class="btn btn-sm btn-danger" onclick="deleteTask('${task.id}')">Delete</button>
@@ -55,159 +110,73 @@ function showData(task) {
         </div>
     `;
 
-    // Append the created element to the parent element
     parentElem.appendChild(elem);
 }
 
-// Helper function to map priority levels to badge classes
 function getPriorityClass(priority) {
-    switch (priority?.toLowerCase()) {
-        case "haute":
-            return "danger";
-        case "moyenne":
-            return "warning";
-        case "basse":
-            return "success";
-        default:
-            return "secondary";
+    switch (priority.toLowerCase()) {
+        case "haute": return "danger";
+        case "moyenne": return "warning";
+        case "basse": return "success";
+        default: return "secondary";
     }
 }
 
-// Function to edit a task (to be implemented)
 function editTask(taskId) {
-    const task = taskesinfo.find(task => task.id == taskId);
+    const task = taskesinfo.find(t => t.id == taskId);
     if (task) {
-        // Populate the form with the task details
         titleInput.value = task.title;
         descriptionInput.value = task.description;
         prioriteInput.value = task.priorite;
-        if (task.isCompleted) {
-            tacheterInput.checked = true;
-        } else {
-            tacheNonermineeInput.checked = true;
-        }
-
-        // Remove the task from the list
+        statusInput.value = task.isCompleted ? 'completed' : 'not-completed';
         deleteTask(taskId);
     }
 }
 
-// Function to delete a task
 function deleteTask(taskId) {
-    taskesinfo = taskesinfo.filter(task => task.id != taskId);
-    const taskElem = document.getElementById(`li-${taskId}`);
-    if (taskElem) {
-        taskElem.remove();
-    }
+    taskesinfo = taskesinfo.filter(t => t.id != taskId);
+    document.getElementById(`li-${taskId}`)?.remove();
 }
 
-// Get all the new elements
-const shortBreakTypeSelect = document.getElementById("shortBreakType");
-const longBreakTypeSelect = document.getElementById("longBreakType");
-const customShortBreakGroup = document.getElementById("customShortBreakGroup");
-const customLongBreakGroup = document.getElementById("customLongBreakGroup");
-
-// Input validation functions
-function validateWorkDuration(value) {
-    const numValue = parseInt(value);
-    return numValue >= 1 && numValue <= 60;
+// Pomodoro Timer Functions
+function updateTimer() {
+    const minutes = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+    const seconds = (timeLeft % 60).toString().padStart(2, '0');
+    timerDisplay.textContent = `${minutes}:${seconds}`;
 }
 
-function validateShortBreak(value) {
-    const numValue = parseInt(value);
-    return numValue >= 1 && numValue <= 15;
-}
-
-function validateLongBreak(value) {
-    const numValue = parseInt(value);
-    return numValue >= 5 && numValue <= 30;
-}
-
-function showError(input) {
-    input.classList.add('is-invalid');
-}
-
-function hideError(input) {
-    input.classList.remove('is-invalid');
-}
-
-// Add event listeners for input validation
-workDurationInput.addEventListener('input', function() {
-    if (validateWorkDuration(this.value)) {
-        hideError(this.value);
-    } else {
-        showError(this.value);
-    }
-});
-
-shortBreakDurationInput.addEventListener('input', function() {
-    if (validateShortBreak(this.value)) {
-        hideError(this);
-    } else {
-        showError(this);
-    }
-});
-
-longBreakDurationInput.addEventListener('input', function() {
-    if (validateLongBreak(this.value)) {
-        hideError(this);
-    } else {
-        showError(this);
-    }
-});
-
-// Handle break type selection changes
-shortBreakTypeSelect.addEventListener('change', function() {
-    if (this.value === 'custom') {
-        customShortBreakGroup.style.display = 'block';
-    } else {
-        customShortBreakGroup.style.display = 'none';
-        shortBreakDurationInput.value = this.value;
-    }
-});
-
-longBreakTypeSelect.addEventListener('change', function() {
-    if (this.value === 'custom') {
-        customLongBreakGroup.style.display = 'block';
-    } else {
-        customLongBreakGroup.style.display = 'none';
-        longBreakDurationInput.value = this.value;
-    }
-});
-
-// Update the getBreakDuration function to use the selected break types
 function getBreakDuration() {
-    if (cyclesCompleted % 4 === 0) {
-        // Long break
-        return longBreakTypeSelect.value === 'custom' 
-            ? parseInt(longBreakDurationInput.value) * 60
-            : parseInt(longBreakTypeSelect.value) * 60;
-    } else {
-        // Short break
-        return shortBreakTypeSelect.value === 'custom'
-            ? parseInt(shortBreakDurationInput.value) * 60
-            : parseInt(shortBreakTypeSelect.value) * 60;
+   let shortBreakDuration = parseInt(shortBreakTypeSelect.value) * 60;
+   let longBreakDuration = parseInt(longBreakTypeSelect.value) * 60;
+
+
+    if (shortBreakTypeSelect.value === 'custom') {
+        shortBreakDuration = parseInt(shortBreakDurationInput.value) * 60;
     }
+
+   if(cyclesCompleted % 4 === 0){
+       if(longBreakTypeSelect.value === 'custom'){
+           longBreakDuration = parseInt(longBreakDurationInput.value) * 60;
+       }
+       return longBreakDuration;
+   }else{
+    return shortBreakDuration;
+   }
 }
 
-// Update the startTimer function to include validation
 function startTimer() {
-    // Validate all inputs before starting
-    if (!validateWorkDuration(workDurationInput.value)) {
-        showError(workDurationInput);
+     if (!validateWorkDuration(workDurationInput.value) ) {
         return;
+    }
+     if (shortBreakTypeSelect.value === 'custom' &&
+         !validateShortBreak(shortBreakDurationInput.value)) {
+         return;
     }
     
-    if (shortBreakTypeSelect.value === 'custom' && !validateShortBreak(shortBreakDurationInput.value)) {
-        showError(shortBreakDurationInput);
+    if (longBreakTypeSelect.value === 'custom' &&
+         !validateLongBreak(longBreakDurationInput.value)) {
         return;
     }
-    
-    if (longBreakTypeSelect.value === 'custom' && !validateLongBreak(longBreakDurationInput.value)) {
-        showError(longBreakDurationInput);
-        return;
-    }
-
     if (!interval) {
         interval = setInterval(() => {
             if (timeLeft > 0) {
@@ -230,43 +199,103 @@ function startTimer() {
     }
 }
 
-// Initialize the timer with validated work duration
-timeLeft = validateWorkDuration(workDurationInput.value) 
-    ? parseInt(workDurationInput.value) * 60 
-    : 1500; 
+// Event Listeners
+document.addEventListener('change', e => {
+    if (e.target.classList.contains('status-select')) {
+        const taskId = e.target.dataset.taskId;
+        const task = taskesinfo.find(t => t.id == taskId);
+        if (task) task.isCompleted = e.target.value === 'completed';
+    }
+});
+
+shortBreakTypeSelect.addEventListener('change', () => {
+    customShortBreakGroup.style.display = shortBreakTypeSelect.value === 'custom' ? 'block' : 'none';
+});
+
+longBreakTypeSelect.addEventListener('change', () => {
+    customLongBreakGroup.style.display = longBreakTypeSelect.value === 'custom' ? 'block' : 'none';
+});
+
+startBtn.addEventListener('click', startTimer);
+pauseBtn.addEventListener('click', () => clearInterval(interval));
+resetBtn.addEventListener('click', () => {
+    clearInterval(interval);
+    interval = null;
+    timeLeft = parseInt(workDurationInput.value) * 60;
+    isWorkTime = true;
+    updateTimer();
+});
+
+// Initialize
+timeLeft = parseInt(workDurationInput.value) * 60;
 updateTimer();
 
 
+// Add proper error handling functions
+function showError(input, message) {
+    const formControl = input.closest('.form-group');
+    const errorDisplay = formControl.querySelector('.invalid-feedback');
+    input.classList.add('is-invalid');
+    errorDisplay.textContent = message;
+    errorDisplay.style.display = 'block';
+}
 
-// validation input : 
-// const title = document.getElementById('title')
-// const description = document.getElementById('description')
-// const form = document.getElementById('form')
-// const errorElement = document.getElementById('error')
+function hideError(input) {
+    const formControl = input.closest('.form-group');
+    const errorDisplay = formControl.querySelector('.invalid-feedback');
+    input.classList.remove('is-invalid');
+    errorDisplay.textContent = '';
+    errorDisplay.style.display = 'none';
+}
 
-// form.addEventListener()('buttonnew',  (e)=> {
-//     let messages = []
+// Update validation functions
+function validateWorkDuration(value) {
+    const num = parseInt(value);
+    if (isNaN(num) || num < 1 || num > 60) {
+        showError(workDurationInput, 'La durée doit être entre 1 et 60 minutes');
+        return false;
+    }
+    hideError(workDurationInput);
+    return true;
+}
 
-//     if (title.value == '' || title.value == null){
-//        messages.push('pleas submit the input') 
-//     }
-//     if(messages.length > 0 ){
-//         e.preventDefault()
-//         errorElement.innerText = messages.join(', ')
-//     }
-    
-// })
+function validateShortBreak(value) {
+    const num = parseInt(value);
+    if (isNaN(num) || num < 1 || num > 15) {
+        showError(shortBreakDurationInput, 'La pause courte doit être entre 1 et 15 minutes');
+        return false;
+    }
+    hideError(shortBreakDurationInput);
+    return true;
+}
 
+function validateLongBreak(value) {
+    const num = parseInt(value);
+    if (isNaN(num) || num < 5 || num > 30) {
+        showError(longBreakDurationInput, 'La pause longue doit être entre 5 et 30 minutes');
+        return false;
+    }
+    hideError(longBreakDurationInput);
+    return true;
+}
 
-const title = document.getElementById("title");
-
-title.addEventListener("label ", (event) => {
-  if (title.validity.typeMismatch) {
-    title.setCustomValidity("I am expecting an title address!");
-  } else {
-    title.setCustomValidity("");
-  }
+// Update input event listeners
+workDurationInput.addEventListener('input', () => {
+    validateWorkDuration(workDurationInput.value);
+    if (validateWorkDuration(workDurationInput.value)) {
+        timeLeft = parseInt(workDurationInput.value) * 60;
+        updateTimer();
+    }
 });
 
+shortBreakDurationInput.addEventListener('input', () => {
+    if (shortBreakTypeSelect.value === 'custom') {
+        validateShortBreak(shortBreakDurationInput.value);
+    }
+});
 
-
+longBreakDurationInput.addEventListener('input', () => {
+    if (longBreakTypeSelect.value === 'custom') {
+        validateLongBreak(longBreakDurationInput.value);
+    }
+});
